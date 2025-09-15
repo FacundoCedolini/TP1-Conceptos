@@ -61,11 +61,89 @@ const servidor = http.createServer((req, res) => {
     res.end();
   }
 
+  // API REST ///////////////////////////////////////////////////////
+
+  // GET: obtener listado de todos los conceptos
+  else if (req.method === 'GET' && parsedUrl.pathname === '/api/conceptos') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(conceptos));
+  }
+
+  // GET/id: obtener un concepto en particular
+  else if (req.method === 'GET' && parsedUrl.pathname.startsWith('/api/conceptos/')) {
+    const id = parseInt(parsedUrl.pathname.split('/')[3]);
+    const concepto = conceptos.find(c => c.id === id);
+
+    if (concepto) {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(concepto));
+    } else {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Concepto no encontrado' }));
+    }
+  }
+
+  // POST: crear un concepto en JSON
+  else if (req.method === 'POST' && parsedUrl.pathname === '/api/conceptos') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+
+    req.on('end', () => {
+      try {
+        const data = JSON.parse(body);
+        if (!data.nombre || !data.descripcion) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ error: 'Faltan campos: nombre y descripcion son requeridos' }));
+        }
+
+        const nuevoConcepto = {
+          id: conceptos.length + 1,
+          nombre: data.nombre,
+          descripcion: data.descripcion
+        };
+
+        conceptos.push(nuevoConcepto);
+
+        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(nuevoConcepto));
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'JSON inválido' }));
+      }
+    });
+  }
+
+  // DELETE: eliminar todos los conceptos
+  else if (req.method === 'DELETE' && parsedUrl.pathname === '/api/conceptos') {
+    conceptos = [];
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ mensaje: 'Todos los conceptos eliminados' }));
+  }
+
+  // DELETE/id: eliminar un concepto en particular
+  else if (req.method === 'DELETE' && parsedUrl.pathname.startsWith('/api/conceptos/')) {
+    const id = parseInt(parsedUrl.pathname.split('/')[3]);
+    const index = conceptos.findIndex(c => c.id === id);
+
+    if (index !== -1) {
+      conceptos.splice(index, 1);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ mensaje: `Concepto con id ${id} eliminado` }));
+    } else {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Concepto no encontrado' }));
+    }
+  }
+
   // Si la ruta no existe
   else {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end('Ruta no encontrada');
   }
+
+  
 
 });
 
