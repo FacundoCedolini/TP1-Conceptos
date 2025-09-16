@@ -2,18 +2,64 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Agregar Concepto</title>
+  <title>Gestión de Conceptos</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Formulario de Conceptos</h1>
-  <form action="/agregar-registros" method="POST">
-    <label>Nombre del concepto: </label>
-    <input type="text" name="nombre" required>
-    <br><br>
-    <label>Descripción: </label>
+  <h1>Agregar Concepto</h1>
+
+  <form id="conceptoForm">
+    <label>Nombre:</label>
+    <input type="text" name="nombre" required><br><br>
+
+    <label>Descripción:</label>
     <textarea name="descripcion" required></textarea>
     <br><br>
+
     <button type="submit">Guardar</button>
   </form>
+
+  <h2>Listado de conceptos</h2>
+  <ul id="listaConceptos"></ul>
+
+  <script>
+    const lista = document.getElementById("listaConceptos");
+    const form = document.getElementById("conceptoForm");
+
+    // Trae todos los conceptos y los muestra en la lista
+    async function cargarConceptos() {
+      const res = await fetch("http://localhost:3000/api/conceptos");
+      const conceptos = await res.json();
+
+      lista.innerHTML = "";
+      conceptos.forEach((c, i) => {
+        const li = document.createElement("li");
+        li.textContent = `${i + 1}. ${c.nombre}: ${c.descripcion}`;
+        lista.appendChild(li);
+      });
+    }
+
+    // Intercepta el submit del formulario y envía con fetch
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault(); // evita recargar la página
+
+      const datos = {
+        nombre: form.nombre.value,
+        descripcion: form.descripcion.value
+      };
+
+      await fetch("http://localhost:3000/api/conceptos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datos)
+      });
+
+      form.reset();        // limpia el formulario
+      await cargarConceptos(); // refresca la lista
+    });
+
+    // Cargar la lista al iniciar
+    window.onload = cargarConceptos;
+  </script>
 </body>
 </html>

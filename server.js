@@ -28,41 +28,6 @@ const servidor = http.createServer((req, res) => {
     });
   }
 
-  // Procesar formulario (POST)
-  else if (req.method === 'POST' && parsedUrl.pathname === '/agregar-registros') {
-    let body = '';
-    req.on('data', chunk => {
-      body += chunk.toString();
-    });
-
-    req.on('end', () => {
-      const params = new URLSearchParams(body);
-      const nombre = params.get('nombre');
-      const descripcion = params.get('descripcion');
-
-      // Guardamos en el arreglo
-      conceptos.push({ nombre, descripcion });
-
-      // Redirigir a mostrar registros
-      res.writeHead(302, { Location: '/mostrar-registros' });
-      res.end();
-    });
-  }
-
-  // Mostrar registros
-  else if (req.method === 'GET' && parsedUrl.pathname === '/mostrar-registros') {
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.write('<h1>Conceptos guardados</h1>');
-    res.write('<ul>');
-    conceptos.forEach((c, i) => {
-      res.write(`<li><strong>${c.nombre}</strong>: ${c.descripcion}</li>`);
-    });
-    res.write('</ul>');
-    res.end();
-  }
-
-  // API REST ///////////////////////////////////////////////////////
-
   // GET: obtener listado de todos los conceptos
   else if (req.method === 'GET' && parsedUrl.pathname === '/api/conceptos') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
