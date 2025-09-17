@@ -19,7 +19,7 @@ const servidor = http.createServer((req, res) => {
   // Ruta para mostrar el formulario
   else if (req.method === 'GET' && parsedUrl.pathname === '/agregar-registros') {
     res.writeHead(200, { 'Content-Type': 'text/html' });
-    fs.readFile('form.html', (err, data) => {
+    fs.readFile('./html/form.html', (err, data) => {
       if (err) {
         res.writeHead(500);
         return res.end('Error cargando el formulario.');
